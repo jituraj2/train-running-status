@@ -1,1 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Train Status Result</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Train Status for {{ data['train_id'] }}</h1>
+        <p>Status: {{ data['status'] }}</p>
+        <p>Current Stop: {{ data['current_stop'] }}</p>
+        <p>Next Stop: {{ data['next_stop'] }}</p>
+        <p>Delay: {{ data['delay'] }} minutes</p>
+        <p>Intermediate Stations: {{ data['intermediate_stations'] }}</p>
+        <a href="/">Check Another Train</a>
+    </div>
+</body>
+</html>
 
