@@ -1,1 +1,10 @@
+services:
+  - type: web
+    name: train-status
+    env: python
+    buildCommand: ""
+    startCommand: python app.py
+    envVars:
+      - key: API_KEY
+        value: your_free_api_key_here
 
