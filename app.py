@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
@@ -14,7 +15,7 @@ def status():
     if not train or not date:
         return jsonify({"error": "Please provide train and date parameters"}), 400
 
-    # Example response, replace this with your actual logic
+    # Dummy response - replace with your real logic or API call
     response = {
         "train": train,
         "date": date,
@@ -26,4 +27,5 @@ def status():
     return jsonify(response)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
