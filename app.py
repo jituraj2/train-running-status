@@ -19,7 +19,7 @@ def status():
     if not train:
         return jsonify({"error": "Train number required"}), 400
 
-    url = "https://indian-railway-irctc.p.rapidapi.com/trainStatus"
+    url = "https://indian-railway-irctc.p.rapidapi.com/trainLiveStatus"
     querystring = {"trainNo": train}
     headers = {
         "X-RapidAPI-Key": os.environ.get("RAPIDAPI_KEY"),
