@@ -1,5 +1,7 @@
 import os
 import requests
+import time
+
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
@@ -51,3 +53,21 @@ def status():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
+
+
+max_retries = 3
+for attempt in range(max_retries):
+    try:
+        response = requests.get(url)
+        data = response.json()
+
+        if data.get("ResponseCode") == "200":
+            break
+        elif attempt < max_retries - 1:
+            time.sleep(2)  # wait 2 seconds before retry
+        else:
+            return jsonify({"error": "API Server busy after retries", "message": data.get("Message")}), 503
+    except Exception as e:
+        return jsonify({"error": "Error contacting IndianRailAPI", "details": str(e)}), 500
+
