@@ -5,6 +5,6 @@ services:
     buildCommand: "pip install -r requirements.txt"
     startCommand: "python app.py"
     envVars:
-      - key: API_KEY
-        value: your_free_api_key_here
+      - key: INDIANRAIL_API_KEY
+        value: 6bf43c622ca31f9e4f601f801bc94477
     autoDeploy: true
