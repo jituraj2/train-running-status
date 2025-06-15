@@ -1,34 +1,67 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>Train Live Status</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      max-width: 500px;
+      background: white;
+      padding: 20px;
+      margin: auto;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, button {
+      padding: 10px;
+      margin-top: 10px;
+      width: 100%;
+      font-size: 16px;
+    }
+    #result {
+      margin-top: 20px;
+      white-space: pre-wrap;
+      background: #eef;
+      padding: 10px;
+      border-radius: 6px;
+    }
+  </style>
 </head>
 <body>
-  <h2>Check Train Status</h2>
-  <input type="text" id="trainNo" placeholder="Enter Train Number" />
-  <button onclick="checkStatus()">Check</button>
-
-  <pre id="result"></pre>
+  <div class="container">
+    <h2>Live Train Status</h2>
+    <input type="text" id="trainNo" placeholder="Enter Train Number (e.g. 18030)" />
+    <button onclick="checkStatus()">Get Status</button>
+    <div id="result"></div>
+  </div>
 
   <script>
     async function checkStatus() {
-      const trainNo = document.getElementById('trainNo').value;
-      const resBox = document.getElementById('result');
-      resBox.textContent = 'Loading...';
+      const trainNo = document.getElementById("trainNo").value.trim();
+      const resultDiv = document.getElementById("result");
+      resultDiv.textContent = "Fetching status...";
 
       try {
-        const response = await fetch('/live-status', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+        const response = await fetch("/live-status", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ trainNo: trainNo })
         });
 
         const data = await response.json();
-        resBox.textContent = JSON.stringify(data, null, 2);
-      } catch (error) {
-        resBox.textContent = "Error: " + error.message;
+
+        if (response.ok) {
+          resultDiv.textContent = JSON.stringify(data, null, 2);
+        } else {
+          resultDiv.textContent = "Error: " + (data.error || "Failed to fetch");
+        }
+      } catch (err) {
+        resultDiv.textContent = "Error: " + err.message;
       }
     }
   </script>
