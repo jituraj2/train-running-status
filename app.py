@@ -56,6 +56,7 @@ def live_status():
     except Exception as e:
         return jsonify({"error": "Failed to fetch live status", "details": str(e)}), 500
 
+
 @app.route('/train-route', methods=['POST'])
 def train_route():
     data = request.get_json()
