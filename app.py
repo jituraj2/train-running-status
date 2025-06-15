@@ -39,7 +39,7 @@ def live_status():
 
     try:
         # ✅ Use the correct endpoint name
-        result = make_rapidapi_post("/liveTrainStatus", payload)
+        result = make_rapidapi_post("/liveTrainStatus?trainNo", payload)
 
         if not isinstance(result, dict):
             return jsonify({"error": "Unexpected API response", "raw": result}), 500
