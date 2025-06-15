@@ -43,14 +43,13 @@ def search_trains():
 def live_status():
     data = request.get_json()
     train_no = data.get('trainNo')
-    date = data.get('date')  # format YYYY-MM-DD or as per API docs
 
-    if not train_no or not date:
-        return jsonify({"error": "Please provide 'trainNo' and 'date' in JSON body"}), 400
+    if not train_no:
+        return jsonify({"error": "No train number provided"}), 400
 
-    payload = {
-        "trainNo": train_no,
-        "date": date
+    # Example dummy response or actual RapidAPI call
+    return jsonify({"train_no": train_no, "status": "Sample success"})
+
     }
 
     try:
@@ -80,3 +79,12 @@ def train_route():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
+const response = await fetch('/live-status', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({ trainNo: trainNo })
+});
+
