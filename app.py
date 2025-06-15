@@ -54,9 +54,16 @@ def live_status():
 
     try:
         result = make_rapidapi_post("/v1/railways/train/status", payload)
+
+        # Optional check for proper response
+        if not isinstance(result, dict) or 'message' not in result:
+            return jsonify({"error": "Unexpected API response", "raw": result}), 500
+
         return jsonify(result)
+
     except Exception as e:
         return jsonify({"error": "Failed to fetch live status", "details": str(e)}), 500
+
 
 
 @app.route('/train-route', methods=['POST'])
