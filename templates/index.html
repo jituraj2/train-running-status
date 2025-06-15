@@ -1,36 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Live Train Status</title>
+  <title>Train Live Status</title>
 </head>
 <body>
-  <h2>Live Train Status Checker</h2>
-
-  <input type="text" id="trainNo" placeholder="Enter Train Number" />
-  <input type="number" id="startDay" placeholder="Start Day (1)" value="1" min="1" max="5"/>
-  <button onclick="getLiveStatus()">Check Status</button>
-
-  <pre id="result"></pre>
+  <h2>Train Live Status Checker</h2>
+  <label>Train Number:</label>
+  <input type="text" id="trainNo" placeholder="e.g. 18030"><br>
+  <label>Start Day:</label>
+  <select id="startDay">
+    <option value="1">Today</option>
+    <option value="2">Tomorrow</option>
+    <option value="3">Day after Tomorrow</option>
+  </select><br><br>
+  <button onclick="fetchLiveStatus()">Check Status</button>
 
   <script>
-    async function getLiveStatus() {
-      const trainNo = document.getElementById('trainNo').value;
-      const startDay = document.getElementById('startDay').value;
+    async function fetchLiveStatus() {
+        const trainNo = document.getElementById('trainNo').value;
+        const startDay = document.getElementById('startDay').value;
 
-      if (!trainNo) {
-        alert("Please enter a train number");
-        return;
-      }
+        const response = await fetch(`/live-status?trainNo=${trainNo}&startDay=${startDay}`);
+        const data = await response.json();
 
-      try {
-        const res = await fetch(`/live-status?trainNo=${trainNo}&startDay=${startDay}`);
-        const data = await res.json();
-        document.getElementById('result').textContent = JSON.stringify(data, null, 2);
-      } catch (err) {
-        document.getElementById('result').textContent = 'Error fetching status';
-        console.error(err);
-      }
+        if (!data.data?.success) {
+            alert(data.data?.message || "Something went wrong");
+        } else {
+            alert("Train Name: " + data.data.train_name + "\nStatus: " + data.data.new_message);
+        }
     }
   </script>
 </body>
