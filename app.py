@@ -5,20 +5,17 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-RAPIDAPI_KEY = os.environ.get("e8b4f34e88msh27c8b188080aee4p1d9dc6jsn6bdc0e3dbae4")
+RAPIDAPI_KEY = os.getenv("RAPIDAPI_KEY")  # Set in Render or your environment
 RAPIDAPI_HOST = "train-running-status-indian-railways.p.rapidapi.com"
 
-def call_rapidapi(endpoint, params=None, payload=None):
+def rapidapi_post(endpoint, body):
     url = f"https://{RAPIDAPI_HOST}/{endpoint}"
     headers = {
         "x-rapidapi-host": RAPIDAPI_HOST,
         "x-rapidapi-key": RAPIDAPI_KEY,
         "Content-Type": "application/json"
     }
-    if params:
-        resp = requests.get(url, headers=headers, params=params)
-    else:
-        resp = requests.post(url, headers=headers, json=payload)
+    resp = requests.post(url, headers=headers, json=body)
     return resp.json()
 
 @app.route('/')
@@ -31,8 +28,11 @@ def live_status():
     if not train_no:
         return jsonify({"error": "Provide 'trainNo'"}), 400
 
-    result = call_rapidapi("getRunningTrain", params={"train": train_no})
-    return jsonify(result)
+    try:
+        data = rapidapi_post("liveTrainRunningStatus", {"trainNo": train_no})
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
