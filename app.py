@@ -5,8 +5,8 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-RAPIDAPI_KEY = os.environ.get("RAPIDAPI_KEY")
-RAPIDAPI_HOST = "indian-railway-live-train.p.rapidapi.com"
+RAPIDAPI_KEY = os.environ.get("e8b4f34e88msh27c8b188080aee4p1d9dc6jsn6bdc0e3dbae4")
+RAPIDAPI_HOST = "train-running-status-indian-railways.p.rapidapi.com"
 
 def call_rapidapi(endpoint, params=None, payload=None):
     url = f"https://{RAPIDAPI_HOST}/{endpoint}"
