@@ -1,24 +1,25 @@
 <!DOCTYPE html>
 <html>
-<head><title>Qrail — Live Train Status</title></head>
+<head>
+  <title>Train Live Status</title>
+</head>
 <body>
-  <h2>Enter Train Number</h2>
-  <input id="trainNo" placeholder="e.g., 12565"/>
-  <button onclick="checkStatus()">Fetch Live Status</button>
+  <h1>Train Live Status</h1>
+  <input type="text" id="trainNo" placeholder="Enter Train Number">
+  <button onclick="checkStatus()">Check Status</button>
+
   <pre id="output"></pre>
 
   <script>
     async function checkStatus() {
-      const tn = document.getElementById("trainNo").value.trim();
-      if (!tn) return document.getElementById("output").innerText = "Please enter a train number";
-      document.getElementById("output").innerText = "Loading...";
-      const r = await fetch("/live-status", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({trainNo: tn})
+      const trainNo = document.getElementById('trainNo').value;
+      const response = await fetch('/live-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trainNo })
       });
-      const data = await r.json();
-      document.getElementById("output").innerText = JSON.stringify(data, null, 2);
+      const result = await response.json();
+      document.getElementById('output').textContent = JSON.stringify(result, null, 2);
     }
   </script>
 </body>
