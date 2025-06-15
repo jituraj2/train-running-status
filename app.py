@@ -1,11 +1,11 @@
 import os
 import http.client
 import json
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-CORS(app)
-from flask import Flask, request, jsonify
 
 app = Flask(__name__)
+CORS(app)
 
 RAPIDAPI_HOST = "trains.p.rapidapi.com"
 RAPIDAPI_KEY = os.environ.get('RAPIDAPI_KEY')
@@ -22,12 +22,9 @@ def make_rapidapi_post(path, payload):
     data = res.read()
     return json.loads(data.decode("utf-8"))
 
-from flask import render_template  # Make sure this is imported
-
 @app.route('/')
 def home():
     return render_template('index.html')
-
 
 @app.route('/search-trains', methods=['GET'])
 def search_trains():
@@ -49,9 +46,8 @@ def live_status():
     if not train_no:
         return jsonify({"error": "No train number provided"}), 400
 
-    # Example dummy response or actual RapidAPI call
-    return jsonify({"train_no": train_no, "status": "Sample success"})
-
+    payload = {
+        "trainNo": train_no
     }
 
     try:
@@ -81,12 +77,3 @@ def train_route():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
-const response = await fetch('/live-status', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({ trainNo: trainNo })
-});
-
