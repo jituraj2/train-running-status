@@ -6,5 +6,5 @@ services:
     startCommand: "python app.py"
     envVars:
       - key: RAPIDAPI_KEY
-        value: 00c03ed5e2msh6d160394d303803p18ce05jsn4781667991f1
+        value: e8b4f34e88msh27c8b188080aee4p1d9dc6jsn6bdc0e3dbae4
     autoDeploy: true
