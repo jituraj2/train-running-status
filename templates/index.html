@@ -1,68 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Train Live Status</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background: #f5f5f5;
-    }
-    .container {
-      max-width: 500px;
-      background: white;
-      padding: 20px;
-      margin: auto;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    input, button {
-      padding: 10px;
-      margin-top: 10px;
-      width: 100%;
-      font-size: 16px;
-    }
-    #result {
-      margin-top: 20px;
-      white-space: pre-wrap;
-      background: #eef;
-      padding: 10px;
-      border-radius: 6px;
-    }
-  </style>
-</head>
+<html>
+<head><title>Live Train Status</title></head>
 <body>
-  <div class="container">
-    <h2>Live Train Status</h2>
-    <input type="text" id="trainNo" placeholder="Enter Train Number (e.g. 18030)" />
-    <button onclick="checkStatus()">Get Status</button>
-    <div id="result"></div>
-  </div>
-
+  <h2>Check Live Train Status</h2>
+  <input id="trainNo" placeholder="Enter train number"/>
+  <button onclick="getStatus()">Get Status</button>
+  <pre id="output"></pre>
   <script>
-    async function checkStatus() {
-      const trainNo = document.getElementById("trainNo").value.trim();
-      const resultDiv = document.getElementById("result");
-      resultDiv.textContent = "Fetching status...";
-
-      try {
-        const response = await fetch("/live-status", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ trainNo: trainNo })
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          resultDiv.textContent = JSON.stringify(data, null, 2);
-        } else {
-          resultDiv.textContent = "Error: " + (data.error || "Failed to fetch");
-        }
-      } catch (err) {
-        resultDiv.textContent = "Error: " + err.message;
-      }
+    async function getStatus() {
+      const n = document.getElementById("trainNo").value.trim();
+      document.getElementById("output").textContent = "Fetching...";
+      const res = await fetch("/live-status", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({trainNo:n})
+      });
+      document.getElementById("output").textContent = JSON.stringify(await res.json(), null, 2);
     }
   </script>
 </body>
