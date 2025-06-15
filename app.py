@@ -1,53 +1,41 @@
-import os
-import json
-import requests
+import os, requests
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
 
-# Set your actual RapidAPI Key
-RAPIDAPI_KEY = os.environ.get("RAPIDAPI_KEY", "your_real_rapidapi_key_here")
+# Set your RapidAPI key here or as an environment variable
+RAPIDAPI_KEY = os.environ.get("RAPIDAPI_KEY", "your_rapidapi_key_here")
 RAPIDAPI_HOST = "irctc1.p.rapidapi.com"
-
-def make_rapidapi_post(path, payload):
-    url = f"https://{RAPIDAPI_HOST}{path}"
-    headers = {
-        "x-rapidapi-host": RAPIDAPI_HOST,
-        "x-rapidapi-key": RAPIDAPI_KEY,
-        "Content-Type": "application/json"
-    }
-    response = requests.post(url, headers=headers, data=json.dumps(payload))
-    return response.json()
 
 @app.route('/')
 def home():
-    return render_template('index.html')  # You must create this file under templates/
+    return render_template('index.html')
 
-@app.route('/live-status', methods=['POST'])
+@app.route('/live-status', methods=['GET'])
 def live_status():
-    data = request.get_json()
-    train_no = data.get('trainNo')
+    train_no = request.args.get("trainNo")
+    start_day = request.args.get("startDay", "1")
 
     if not train_no:
-        return jsonify({"error": "No train number provided"}), 400
+        return jsonify({"error": "Please provide 'trainNo'"}), 400
 
-    payload = {
-        "trainNo": train_no
+    url = f"https://{RAPIDAPI_HOST}/api/v1/liveTrainStatus"
+    headers = {
+        "X-RapidAPI-Host": RAPIDAPI_HOST,
+        "X-RapidAPI-Key": RAPIDAPI_KEY
+    }
+    params = {
+        "trainNo": train_no,
+        "startDay": start_day
     }
 
     try:
-        # ✅ Correct path from IRCTCAPI provider
-        result = make_rapidapi_post("/train/live/status", payload)
-
-        if not isinstance(result, dict):
-            return jsonify({"error": "Unexpected API response", "raw": result}), 500
-
-        return jsonify(result)
-
+        response = requests.get(url, headers=headers, params=params)
+        return jsonify(response.json())
     except Exception as e:
-        return jsonify({"error": "Failed to fetch live status", "details": str(e)}), 500
+        return jsonify({"error": "API request failed", "details": str(e)}), 500
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
