@@ -9,7 +9,7 @@ CORS(app)
 
 # Set your actual RapidAPI Key
 RAPIDAPI_KEY = os.environ.get("RAPIDAPI_KEY", "your_real_rapidapi_key_here")
-RAPIDAPI_HOST = "indian-railway-irctc.p.rapidapi.com"
+RAPIDAPI_HOST = "irctc1.p.rapidapi.com"
 
 def make_rapidapi_post(path, payload):
     url = f"https://{RAPIDAPI_HOST}{path}"
