@@ -1,6 +1,8 @@
 import os
 import http.client
 import json
+from flask_cors import CORS
+CORS(app)
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
