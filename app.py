@@ -9,6 +9,8 @@ CORS(app)
 
 RAPIDAPI_HOST = "trains.p.rapidapi.com"
 RAPIDAPI_KEY = os.environ.get('RAPIDAPI_KEY')
+print("RAPIDAPI_KEY:", RAPIDAPI_KEY)
+
 
 def make_rapidapi_post(path, payload):
     conn = http.client.HTTPSConnection(RAPIDAPI_HOST)
