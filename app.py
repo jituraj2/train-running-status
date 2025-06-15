@@ -20,9 +20,12 @@ def make_rapidapi_post(path, payload):
     data = res.read()
     return json.loads(data.decode("utf-8"))
 
+from flask import render_template  # Make sure this is imported
+
 @app.route('/')
 def home():
-    return "Train Status API running!"
+    return render_template('index.html')
+
 
 @app.route('/search-trains', methods=['GET'])
 def search_trains():
