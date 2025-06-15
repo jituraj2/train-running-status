@@ -9,7 +9,7 @@ CORS(app)
 
 # Replace with your actual RapidAPI Key or set it in environment
 RAPIDAPI_KEY = os.environ.get("RAPIDAPI_KEY", "your_real_key_here")
-RAPIDAPI_HOST = "train-running-status-indian-railways.p.rapidapi.com"
+RAPIDAPI_HOST = "irctc1.p.rapidapi.com"
 
 def make_rapidapi_post(path, payload):
     url = f"https://{RAPIDAPI_HOST}{path}"
@@ -39,7 +39,7 @@ def live_status():
 
     try:
         # ✅ Use the correct endpoint name
-        result = make_rapidapi_post("/train-running-status-indian-railways.p.rapidapi.com/trainman//trainman/", payload)
+        result = make_rapidapi_post("/liveTrainStatus", payload)
 
         if not isinstance(result, dict):
             return jsonify({"error": "Unexpected API response", "raw": result}), 500
