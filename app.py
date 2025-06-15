@@ -24,15 +24,27 @@ def home():
 
 @app.route('/live-status', methods=['POST'])
 def live_status():
-    train_no = request.get_json().get("trainNo")
+    data = request.get_json()
+    train_no = data.get('trainNo')
+
     if not train_no:
-        return jsonify({"error": "Provide 'trainNo'"}), 400
+        return jsonify({"error": "No train number provided"}), 400
+
+    payload = {
+        "trainNo": train_no
+    }
 
     try:
-        data = rapidapi_post("liveTrainRunningStatus", {"trainNo": train_no})
-        return jsonify(data)
+        result = make_rapidapi_post("/trainLiveStatus", payload)
+
+        if not isinstance(result, dict):
+            return jsonify({"error": "Unexpected API response", "raw": result}), 500
+
+        return jsonify(result)
+
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Failed to fetch live status", "details": str(e)}), 500
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
