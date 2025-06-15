@@ -13,29 +13,26 @@ RAPIDAPI_HOST = "irctc1.p.rapidapi.com"
 def home():
     return render_template('index.html')
 
-@app.route('/live-status', methods=['GET'])
+@app.route('/live-status', methods=['POST'])
 def live_status():
-    train_no = request.args.get("trainNo")
-    start_day = request.args.get("startDay", "1")
+    data = request.get_json()
+    train_no = data.get('trainNo')
+    start_day = data.get('startDay')
 
-    if not train_no:
-        return jsonify({"error": "Please provide 'trainNo'"}), 400
+    if not train_no or not start_day:
+        return jsonify({"error": "trainNo and startDay are required"}), 400
 
-    url = f"https://{RAPIDAPI_HOST}/api/v1/liveTrainStatus"
-    headers = {
-        "X-RapidAPI-Host": RAPIDAPI_HOST,
-        "X-RapidAPI-Key": RAPIDAPI_KEY
-    }
-    params = {
+    payload = {
         "trainNo": train_no,
         "startDay": start_day
     }
 
     try:
-        response = requests.get(url, headers=headers, params=params)
-        return jsonify(response.json())
+        result = make_rapidapi_post("/train/live/status", payload)
+        return jsonify(result)
     except Exception as e:
-        return jsonify({"error": "API request failed", "details": str(e)}), 500
+        return jsonify({"error": "Failed to fetch live status", "details": str(e)}), 500
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
