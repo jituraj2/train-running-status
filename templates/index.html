@@ -1,25 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Train Live Status</title>
+  <meta charset="UTF-8">
+  <title>Live Train Status</title>
 </head>
 <body>
-  <h1>Train Live Status</h1>
-  <input type="text" id="trainNo" placeholder="Enter Train Number">
-  <button onclick="checkStatus()">Check Status</button>
+  <h2>Live Train Status Checker</h2>
 
-  <pre id="output"></pre>
+  <input type="text" id="trainNo" placeholder="Enter Train Number" />
+  <input type="number" id="startDay" placeholder="Start Day (1)" value="1" min="1" max="5"/>
+  <button onclick="getLiveStatus()">Check Status</button>
+
+  <pre id="result"></pre>
 
   <script>
-    async function checkStatus() {
+    async function getLiveStatus() {
       const trainNo = document.getElementById('trainNo').value;
-      const response = await fetch('/live-status', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ trainNo })
-      });
-      const result = await response.json();
-      document.getElementById('output').textContent = JSON.stringify(result, null, 2);
+      const startDay = document.getElementById('startDay').value;
+
+      if (!trainNo) {
+        alert("Please enter a train number");
+        return;
+      }
+
+      try {
+        const res = await fetch(`/live-status?trainNo=${trainNo}&startDay=${startDay}`);
+        const data = await res.json();
+        document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        document.getElementById('result').textContent = 'Error fetching status';
+        console.error(err);
+      }
     }
   </script>
 </body>
