@@ -7,9 +7,9 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-# Replace with your actual RapidAPI Key or set it in environment
-RAPIDAPI_KEY = os.environ.get("RAPIDAPI_KEY", "your_real_key_here")
-RAPIDAPI_HOST = "irctc1.p.rapidapi.com"
+# Set your actual RapidAPI Key
+RAPIDAPI_KEY = os.environ.get("RAPIDAPI_KEY", "your_real_rapidapi_key_here")
+RAPIDAPI_HOST = "indian-railway-irctc.p.rapidapi.com"
 
 def make_rapidapi_post(path, payload):
     url = f"https://{RAPIDAPI_HOST}{path}"
@@ -23,7 +23,7 @@ def make_rapidapi_post(path, payload):
 
 @app.route('/')
 def home():
-    return render_template('index.html')  # Ensure templates/index.html exists
+    return render_template('index.html')  # You must create this file under templates/
 
 @app.route('/live-status', methods=['POST'])
 def live_status():
@@ -38,8 +38,8 @@ def live_status():
     }
 
     try:
-        # ✅ Use the correct endpoint name
-        result = make_rapidapi_post("/liveTrainStatus?trainNo", payload)
+        # ✅ Correct path from IRCTCAPI provider
+        result = make_rapidapi_post("/train/live/status", payload)
 
         if not isinstance(result, dict):
             return jsonify({"error": "Unexpected API response", "raw": result}), 500
