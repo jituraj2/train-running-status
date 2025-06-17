@@ -55,23 +55,22 @@
         const data = await response.json();
 
         if (!response.ok || data.error) {
-          resultDiv.innerHTML = `<div class="alert alert-danger">❌ ${data.error || 'Failed to fetch data'}</div>`;
-        } else {
-          const info = data.data;
-          resultDiv.innerHTML = `
-            <div class="card shadow-sm p-4">
-              <h5>Train Name: <strong>${info.train_name}</strong></h5>
-              <p>Status Message: ${info.message}</p>
-              <p>Start Day: ${startDay}</p>
-              <p>Success: ${info.success ? '✅ Yes' : '❌ No'}</p>
-              <p><small>Requested at: ${new Date().toLocaleString()}</small></p>
-            </div>
-          `;
-        }
-      } catch (error) {
-        resultDiv.innerHTML = `<div class="alert alert-danger">❌ Error: ${error.message}</div>`;
-      }
-    }
+  resultDiv.innerHTML = `<div class="alert alert-danger">❌ ${data.error || 'Failed to fetch data'}</div>`;
+} else if (!data.data) {
+  resultDiv.innerHTML = `<div class="alert alert-warning">⚠️ Unexpected API response</div>`;
+} else {
+  const info = data.data;
+  resultDiv.innerHTML = `
+    <div class="card shadow-sm p-4">
+      <h5>Train Name: <strong>${info.train_name || 'N/A'}</strong></h5>
+      <p>Status Message: ${info.message || 'N/A'}</p>
+      <p>Start Day: ${startDay}</p>
+      <p>Success: ${info.success ? '✅ Yes' : '❌ No'}</p>
+      <p><small>Requested at: ${new Date().toLocaleString()}</small></p>
+    </div>
+  `;
+}
+
   </script>
 
 </body>
