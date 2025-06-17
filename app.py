@@ -28,26 +28,32 @@ def home():
 def live_status():
     data = request.get_json()
     train_no = data.get('trainNo')
-    start_day = data.get('startDay')
+    start_day = data.get('startDay')  # Optional, depending on API
 
-    if not train_no or not start_day:
-        return jsonify({"error": "Train number and start day are required"}), 400
+    if not train_no:
+        return jsonify({"error": "Train number required"}), 400
 
     payload = {
-        "trainNo": train_no,
-        "startDay": start_day
+        "trainNo": train_no
     }
 
     try:
         result = make_rapidapi_post("/trainLiveStatus", payload)
+        if "body" not in result or "stations" not in result["body"]:
+            return jsonify({"error": "Invalid API response", "data": result}), 500
 
-        if "data" not in result:
-            return jsonify({"error": "Invalid response from API", "raw": result}), 500
-
-        return jsonify(result)
+        # Return only needed fields
+        response = {
+            "train_status_message": result["body"].get("train_status_message"),
+            "current_station": result["body"].get("current_station"),
+            "terminated": result["body"].get("terminated"),
+            "stations": result["body"].get("stations", [])
+        }
+        return jsonify(response)
 
     except Exception as e:
         return jsonify({"error": "Failed to fetch live status", "details": str(e)}), 500
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
