@@ -7,8 +7,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-# ✅ Use your actual RapidAPI key or set it via environment variable
-RAPIDAPI_KEY = os.environ.get("RAPIDAPI_KEY", "your_real_key_here")
+RAPIDAPI_KEY = os.environ.get("RAPIDAPI_KEY", "your_real_rapidapi_key_here")
 RAPIDAPI_HOST = "indian-railway-irctc.p.rapidapi.com"
 
 def make_rapidapi_post(path, payload):
@@ -23,7 +22,7 @@ def make_rapidapi_post(path, payload):
 
 @app.route('/')
 def home():
-    return render_template('index.html')  # Make sure templates/index.html exists
+    return render_template('index.html')
 
 @app.route('/live-status', methods=['POST'])
 def live_status():
@@ -36,13 +35,12 @@ def live_status():
 
     payload = {
         "trainNo": train_no,
-        "startDay": start_day  # must be 1, 2 or 3 based on the API
+        "startDay": start_day
     }
 
     try:
         result = make_rapidapi_post("/trainLiveStatus", payload)
 
-        # ✅ Safeguard in case of unexpected structure
         if "data" not in result:
             return jsonify({"error": "Invalid response from API", "raw": result}), 500
 
@@ -50,7 +48,6 @@ def live_status():
 
     except Exception as e:
         return jsonify({"error": "Failed to fetch live status", "details": str(e)}), 500
-
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
