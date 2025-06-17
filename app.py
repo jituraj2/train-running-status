@@ -28,31 +28,39 @@ def home():
 def live_status():
     data = request.get_json()
     train_no = data.get('trainNo')
-    start_day = data.get('startDay')  # Optional, depending on API
 
     if not train_no:
         return jsonify({"error": "Train number required"}), 400
 
-    payload = {
-        "trainNo": train_no
-    }
+    payload = { "trainNo": train_no }
 
     try:
         result = make_rapidapi_post("/trainLiveStatus", payload)
-        if "body" not in result or "stations" not in result["body"]:
-            return jsonify({"error": "Invalid API response", "data": result}), 500
+        print("🔎 API Response:", json.dumps(result, indent=2))  # Debugging
 
-        # Return only needed fields
+        # Safe extraction
+        body = result.get("body")
+        if not body or "stations" not in body:
+            return jsonify({
+                "error": "Invalid API response",
+                "raw_response": result
+            }), 500
+
         response = {
-            "train_status_message": result["body"].get("train_status_message"),
-            "current_station": result["body"].get("current_station"),
-            "terminated": result["body"].get("terminated"),
-            "stations": result["body"].get("stations", [])
+            "train_status_message": body.get("train_status_message", "N/A"),
+            "current_station": body.get("current_station", "N/A"),
+            "terminated": body.get("terminated", False),
+            "stations": body.get("stations", [])
         }
+
         return jsonify(response)
 
     except Exception as e:
-        return jsonify({"error": "Failed to fetch live status", "details": str(e)}), 500
+        return jsonify({
+            "error": "Failed to fetch live status",
+            "details": str(e)
+        }), 500
+
 
 
 if __name__ == "__main__":
