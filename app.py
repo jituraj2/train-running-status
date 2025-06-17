@@ -30,37 +30,39 @@ def live_status():
     train_no = data.get('trainNo')
 
     if not train_no:
-        return jsonify({"error": "Train number required"}), 400
+        return jsonify({"error": "Train number is required"}), 400
 
     payload = { "trainNo": train_no }
 
     try:
         result = make_rapidapi_post("/trainLiveStatus", payload)
-        print("🔎 API Response:", json.dumps(result, indent=2))  # Debugging
+        print("🔍 API raw response:", json.dumps(result, indent=2))
 
-        # Safe extraction
-        body = result.get("body")
-        if not body or "stations" not in body:
+        # Navigate the structure: result → data → body
+        body = result.get("data", {}).get("body")
+        if not body:
             return jsonify({
-                "error": "Invalid API response",
+                "error": "Invalid API structure",
+                "note": "Missing 'body' in result",
                 "raw_response": result
             }), 500
 
+        stations = body.get("stations", [])
         response = {
-            "train_status_message": body.get("train_status_message", "N/A"),
-            "current_station": body.get("current_station", "N/A"),
+            "train_status_message": body.get("train_status_message", "Not available"),
+            "current_station": body.get("current_station", "Unknown"),
             "terminated": body.get("terminated", False),
-            "stations": body.get("stations", [])
+            "time_of_availability": body.get("time_of_availability", "Unknown"),
+            "stations": stations
         }
 
         return jsonify(response)
 
     except Exception as e:
         return jsonify({
-            "error": "Failed to fetch live status",
+            "error": "Exception occurred while fetching status",
             "details": str(e)
         }), 500
-
 
 
 if __name__ == "__main__":
