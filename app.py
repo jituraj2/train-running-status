@@ -11,14 +11,15 @@ RAPIDAPI_KEY = os.environ.get("RAPIDAPI_KEY", "your_real_rapidapi_key_here")
 RAPIDAPI_HOST = "indian-railway-irctc.p.rapidapi.com"
 
 def make_rapidapi_post(path, payload):
-    url = f"https://{RAPIDAPI_HOST}{path}"
+    url = f"https://irctc1.p.rapidapi.com{path}"
     headers = {
-        "x-rapidapi-host": RAPIDAPI_HOST,
-        "x-rapidapi-key": RAPIDAPI_KEY,
+        "X-RapidAPI-Host": "irctc1.p.rapidapi.com",
+        "X-RapidAPI-Key": RAPIDAPI_KEY,
         "Content-Type": "application/json"
     }
     response = requests.post(url, headers=headers, data=json.dumps(payload))
     return response.json()
+
 
 @app.route('/')
 def home():
