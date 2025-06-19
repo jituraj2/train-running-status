@@ -18,7 +18,7 @@ def live_status():
 
     api_key = os.getenv("RAIL_API_KEY")
     if not api_key:
-        return jsonify({"error": "API key not set in environment variables"}), 500
+        return jsonify({"error": "API key not set"}), 500
 
     url = f"https://indianrailapi.com/api/v2/livetrainstatus/apikey/{api_key}/trainnumber/{train_number}/date/{departure_date}/"
 
@@ -29,4 +29,6 @@ def live_status():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    # ✅ Render requires this
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
