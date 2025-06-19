@@ -1,7 +1,14 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
+
 import requests
 
-app = Flask(__name__)
+
+app = Flask(__name__, static_folder='static', template_folder='templates')
+
+@app.route("/")
+def home():
+    return render_template("index.html")  # This file should be in the templates/ folder
+
 
 # 🔁 Replace with your actual RapidAPI credentials
 RAPIDAPI_KEY = "YOUR_RAPIDAPI_KEY"
