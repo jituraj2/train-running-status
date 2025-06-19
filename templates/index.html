@@ -2,63 +2,85 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Live Train Status</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { background-color: #f0f2f5; padding: 30px; }
-    .station-card { background: white; border-left: 5px solid #007bff; margin-bottom: 15px; padding: 15px; border-radius: 8px; }
-    .status { font-size: 1.1rem; font-weight: bold; }
+    body { background-color: #f4f7fa; }
+    .card { box-shadow: 0 0 12px rgba(0,0,0,0.1); margin-bottom: 1rem; border-left: 5px solid #0d6efd; }
+    .current { background-color: #d1e7dd !important; border-left-color: #198754 !important; }
+    .terminated { background-color: #f8d7da !important; border-left-color: #dc3545 !important; }
+    .station-header { font-weight: 600; color: #0d6efd; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2 class="mb-4">🚆 Live Train Status</h2>
+  <div class="container py-4">
+    <h2 class="mb-4 text-center">Live Train Status</h2>
 
-    <form id="statusForm" class="mb-4">
-      <div class="row g-3">
-        <div class="col-md-6">
-          <input type="text" class="form-control" id="trainNo" placeholder="Enter Train Number (e.g. 18030)" required>
-        </div>
-        <div class="col-md-2">
-          <button type="submit" class="btn btn-primary w-100">Check Status</button>
-        </div>
-      </div>
-    </form>
+    <div id="status-message" class="alert alert-info text-center">
+      Loading status...
+    </div>
 
-    <div id="statusResult"></div>
+    <div class="row" id="stations-list">
+      <!-- Station cards will be inserted here -->
+    </div>
   </div>
 
   <script>
-    document.getElementById("statusForm").addEventListener("submit", async function(e) {
-      e.preventDefault();
-      const trainNo = document.getElementById("trainNo").value;
-      const resultDiv = document.getElementById("statusResult");
-      resultDiv.innerHTML = "⏳ Fetching train status...";
+    // Replace this with actual API data fetching
+    const data = {
+      "error": null,
+      "status": { "result": "success", "message": { "title": "Success", "message": "" } },
+      "body": {
+        "time_of_availability": "a few seconds ago",
+        "current_station": "MAO",
+        "terminated": true,
+        "server_timestamp": "2025-06-17T18:55:28+05:30",
+        "train_status_message": "Train has reached destination.",
+        "stations": [
+          {"stationCode":"CSMT","stationName":"C Shivaji Mah T","arrivalTime":"--","departureTime":"05:10","routeNumber":"1","haltTime":"--","distance":"0","dayCount":"1","stnSerialNumber":"1","boardingDisabled":"false","actual_arrival_time":"--","actual_departure_time":"05:10"},
+          {"stationCode":"DR","stationName":"Dadar","arrivalTime":"05:18","departureTime":"05:20","routeNumber":"1","haltTime":"02:00","distance":"9","dayCount":"1","stnSerialNumber":"2","boardingDisabled":"false","actual_arrival_time":"05:18","actual_departure_time":"05:20"},
+          {"stationCode":"TNA","stationName":"Thane","arrivalTime":"05:43","departureTime":"05:45","routeNumber":"1","haltTime":"02:00","distance":"34","dayCount":"1","stnSerialNumber":"3","boardingDisabled":"false","actual_arrival_time":"05:43","actual_departure_time":"05:45"},
+          {"stationCode":"PNVL","stationName":"Panvel","arrivalTime":"06:23","departureTime":"06:25","routeNumber":"1","haltTime":"02:00","distance":"69","dayCount":"1","stnSerialNumber":"5","boardingDisabled":"false","actual_arrival_time":"06:23","actual_departure_time":"06:25"},
+          {"stationCode":"MAO","stationName":"Madgaon","arrivalTime":"14:30","departureTime":"--","routeNumber":"1","haltTime":"--","distance":"765","dayCount":"1","stnSerialNumber":"12","boardingDisabled":"false","actual_arrival_time":"14:30","actual_departure_time":"--"}
+        ]
+      },
+      "meta": {},
+      "code": 200
+    };
 
-      const res = await fetch("/live-status", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ trainNo })
-      });
+    const stations = data.body.stations;
+    const currentStation = data.body.current_station;
+    const terminated = data.body.terminated;
+    const statusMessage = data.body.train_status_message || "Status not available";
 
-      const data = await res.json();
-      if (data.error) {
-        resultDiv.innerHTML = `<div class="alert alert-danger">❌ ${data.error}</div>`;
-        return;
-      }
+    document.getElementById("status-message").innerText = statusMessage;
+    const container = document.getElementById("stations-list");
 
-      resultDiv.innerHTML = `
-        <div class="mb-3 status text-primary">📍 Current Station: ${data.current_station || "N/A"}<br>
-        🚦 Status: ${data.train_status_message || "N/A"}</div>
-        <h5>🛤️ Station Timeline:</h5>
-        ${data.stations.map(stn => `
-          <div class="station-card">
-            <div><strong>${stn.stationName}</strong> (${stn.stationCode})</div>
-            <div>Arrival: ${stn.actual_arrival_time || "--"}, Departure: ${stn.actual_departure_time || "--"}</div>
-            <div>Distance: ${stn.distance} km, Halt: ${stn.haltTime}</div>
+    stations.forEach(station => {
+      const div = document.createElement("div");
+      div.className = "col-md-6";
+
+      const isCurrent = station.stationCode === currentStation;
+      const isTerminated = terminated && isCurrent;
+
+      div.innerHTML = `
+        <div class="card ${isCurrent ? 'current' : ''} ${isTerminated ? 'terminated' : ''}">
+          <div class="card-body">
+            <h5 class="card-title station-header">${station.stationName} (${station.stationCode})</h5>
+            <p class="card-text">
+              <strong>Scheduled Arrival:</strong> ${station.arrivalTime}<br>
+              <strong>Actual Arrival:</strong> ${station.actual_arrival_time}<br>
+              <strong>Scheduled Departure:</strong> ${station.departureTime}<br>
+              <strong>Actual Departure:</strong> ${station.actual_departure_time}<br>
+              <strong>Distance:</strong> ${station.distance} km<br>
+              <strong>Day:</strong> ${station.dayCount}
+            </p>
           </div>
-        `).join('')}
+        </div>
       `;
+
+      container.appendChild(div);
     });
   </script>
 </body>
