@@ -40,7 +40,7 @@
         <input type="text" id="trainNoInput" class="form-control" placeholder="Enter Train Number (e.g., 18030)">
       </div>
       <div class="col-md-3">
-        <input type="date" id="dojInput" class="form-control" value="2024-06-23">
+        <input type="text" id="dojInput" class="form-control" placeholder="Enter Date (YYYYMMDD)">
       </div>
       <div class="col-md-2">
         <button class="btn btn-primary w-100" onclick="fetchStatus()">Search</button>
@@ -60,17 +60,15 @@
   <script>
     function fetchStatus() {
       const trainNo = document.getElementById("trainNoInput").value.trim();
-      const dojInput = document.getElementById("dojInput").value;
+      const doj = document.getElementById("dojInput").value.trim();
       const statusMsg = document.getElementById("status-message");
       const trainInfo = document.getElementById("train-info");
       const container = document.getElementById("stations-list");
 
-      if (!trainNo || !dojInput) {
-        alert("Please enter both train number and date of journey.");
+      if (!trainNo || !doj || doj.length !== 8 || isNaN(doj)) {
+        alert("Please enter a valid train number and date in YYYYMMDD format.");
         return;
       }
-
-      const doj = dojInput.replace(/-/g, ""); // YYYYMMDD
 
       statusMsg.style.display = 'block';
       statusMsg.className = 'alert alert-info text-center';
@@ -79,7 +77,10 @@
       container.innerHTML = '';
 
       fetch(`/live-status?train_number=${trainNo}&departure_date=${doj}&isH5=true&client=web`)
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) throw new Error('Network response was not ok');
+          return res.json();
+        })
         .then(data => {
           if (!data || !data.body || !Array.isArray(data.body.stations)) {
             statusMsg.className = 'alert alert-danger text-center';
@@ -92,7 +93,7 @@
 
           statusMsg.className = 'alert alert-success text-center';
           statusMsg.innerHTML = `✅ <strong>${title}:</strong> ${train_status_message}`;
-          trainInfo.innerHTML = `Showing live status for <strong>Train No: ${trainNo}</strong><br><span class="text-muted">Date of Journey: ${dojInput}</span>`;
+          trainInfo.innerHTML = `Showing live status for <strong>Train No: ${trainNo}</strong><br><span class="text-muted">Date of Journey: ${doj}</span>`;
 
           stations.forEach(station => {
             const div = document.createElement("div");
