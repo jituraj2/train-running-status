@@ -96,7 +96,7 @@
           return;
         }
 
-        const { train_status_message, current_station, terminated, stations } = data.body;
+        const { train_status_message = 'Train status unavailable', current_station, terminated, stations } = data.body;
         const title = data?.title || 'Success';
 
         statusMsg.className = 'alert alert-success text-center';
@@ -115,10 +115,10 @@
               <div class="card-body">
                 <h5 class="card-title station-header">${station.stationName} <span class="text-muted">(${station.stationCode})</span></h5>
                 <p class="card-text">
-                  🕑 <strong>Scheduled Arrival:</strong> ${station.arrivalTime}<br>
-                  ✅ <strong>Actual Arrival:</strong> ${station.actual_arrival_time}<br>
-                  🕓 <strong>Scheduled Departure:</strong> ${station.departureTime}<br>
-                  ✅ <strong>Actual Departure:</strong> ${station.actual_departure_time}<br>
+                  🕑 <strong>Scheduled Arrival:</strong> ${station.arrivalTime || '--'}<br>
+                  ✅ <strong>Actual Arrival:</strong> ${station.actual_arrival_time || '--'}<br>
+                  🕓 <strong>Scheduled Departure:</strong> ${station.departureTime || '--'}<br>
+                  ✅ <strong>Actual Departure:</strong> ${station.actual_departure_time || '--'}<br>
                   📏 <strong>Distance:</strong> ${station.distance} km<br>
                   📅 <strong>Day:</strong> ${station.dayCount}
                 </p>
