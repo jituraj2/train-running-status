@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify, render_template
 import requests
 
@@ -15,18 +16,15 @@ def live_status():
     if not train_number or not departure_date:
         return jsonify({"error": "Missing parameters"}), 400
 
-    url = "https://indianrailapi.com/api/v2/livetrainstatus/apikey/YOUR_API_KEY/trainnumber/{}/date/{}/".format(
-        train_number, departure_date)
+    api_key = os.getenv("RAIL_API_KEY")
+    if not api_key:
+        return jsonify({"error": "API key not set in environment variables"}), 500
 
-    # If you're using RapidAPI, use this instead:
-    # url = "https://rahilkhan224-indian-railway-irctc-v1.p.rapidapi.com/liveTrainStatus"
-    # params = {"departure_date": departure_date, "train_number": train_number, "isH5": "true", "client": "web"}
-    # headers = {"X-RapidAPI-Key": "YOUR_KEY", "X-RapidAPI-Host": "indian-railway-irctc.p.rapidapi.com"}
+    url = f"https://indianrailapi.com/api/v2/livetrainstatus/apikey/{api_key}/trainnumber/{train_number}/date/{departure_date}/"
 
     try:
-        response = requests.get(url)  # or requests.get(url, headers=headers, params=params)
-        data = response.json()
-        return jsonify(data)
+        response = requests.get(url)
+        return jsonify(response.json())
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
