@@ -1,63 +1,34 @@
 from flask import Flask, request, jsonify, render_template
-
 import requests
 
+app = Flask(__name__)
 
-app = Flask(__name__, static_folder='static', template_folder='templates')
-
-@app.route("/")
+@app.route('/')
 def home():
-    return render_template("index.html")  # This file should be in the templates/ folder
+    return render_template("index.html")
 
-
-# 🔁 Replace with your actual RapidAPI credentials
-RAPIDAPI_KEY = "YOUR_RAPIDAPI_KEY"
-RAPIDAPI_HOST = "indian-railway-irctc.p.rapidapi.com"
-
-def make_rapidapi_post(endpoint, payload):
-    url = f"https://{RAPIDAPI_HOST}{endpoint}"
-    headers = {
-        "content-type": "application/json",
-        "X-RapidAPI-Key": RAPIDAPI_KEY,
-        "X-RapidAPI-Host": RAPIDAPI_HOST
-    }
-    response = requests.post(url, json=payload, headers=headers)
-    return response.json()
-
-@app.route("/live-status")
+@app.route('/live-status')
 def live_status():
-    train_no = request.args.get("train_number")
-    departure_date = request.args.get("departure_date")
-    isH5 = request.args.get("isH5", "true")
-    client = request.args.get("client", "web")
+    train_number = request.args.get('train_number')
+    departure_date = request.args.get('departure_date')
 
-    if not train_no or not departure_date:
-        return jsonify({"error": "Train number and departure date are required"}), 400
+    if not train_number or not departure_date:
+        return jsonify({"error": "Missing parameters"}), 400
+
+    url = "https://indianrailapi.com/api/v2/livetrainstatus/apikey/YOUR_API_KEY/trainnumber/{}/date/{}/".format(
+        train_number, departure_date)
+
+    # If you're using RapidAPI, use this instead:
+    # url = "https://rahilkhan224-indian-railway-irctc-v1.p.rapidapi.com/liveTrainStatus"
+    # params = {"departure_date": departure_date, "train_number": train_number, "isH5": "true", "client": "web"}
+    # headers = {"X-RapidAPI-Key": "YOUR_KEY", "X-RapidAPI-Host": "indian-railway-irctc.p.rapidapi.com"}
 
     try:
-        payload = {
-            "trainNo": train_no,
-            "departure_date": departure_date,
-            "isH5": isH5,
-            "client": client
-        }
-
-        result = make_rapidapi_post("/trainLiveStatus", payload)
-
-        if result.get("status") != "success" or not result.get("body"):
-            return jsonify({
-                "error": "Invalid API structure or missing data",
-                "raw": result
-            }), 500
-
-        return jsonify({
-            "title": result.get("title", "Live Status"),
-            "message": result.get("message"),
-            "body": result["body"]
-        })
-
+        response = requests.get(url)  # or requests.get(url, headers=headers, params=params)
+        data = response.json()
+        return jsonify(data)
     except Exception as e:
-        return jsonify({"error": "Exception occurred", "details": str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(debug=True, port=5000)
