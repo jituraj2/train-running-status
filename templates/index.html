@@ -24,51 +24,84 @@
     }
     .station-header { font-weight: 600; color: #0d6efd; }
     .badge-info { background-color: #0dcaf0; }
+    footer {
+      margin-top: 2rem;
+      text-align: center;
+      color: #6c757d;
+    }
   </style>
 </head>
 <body>
   <div class="container py-4">
     <h2 class="mb-4 text-center">Live Train Status</h2>
 
-    <div class="mb-4 d-flex justify-content-center">
-      <input type="text" id="trainNoInput" class="form-control w-50 me-2" placeholder="Enter Train Number">
-      <button class="btn btn-primary" onclick="fetchStatus()">Search</button>
+    <div class="mb-3 row justify-content-center">
+      <div class="col-md-5">
+        <input type="text" id="trainNoInput" class="form-control" placeholder="Enter Train Number (e.g., 18030)">
+      </div>
+      <div class="col-md-3">
+        <input type="date" id="dojInput" class="form-control" value="2024-06-23">
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-primary w-100" onclick="fetchStatus()">Search</button>
+      </div>
     </div>
 
-    <div id="status-message" class="alert alert-primary text-center" style="display:none;"></div>
+    <div id="status-message" class="alert text-center" style="display:none;"></div>
+    <h5 id="train-info" class="text-center text-muted mb-3"></h5>
 
     <div class="row" id="stations-list"></div>
   </div>
 
+  <footer>
+    <small>© 2025 By AK IT Services</small>
+  </footer>
+
   <script>
     function fetchStatus() {
-      const trainNo = document.getElementById("trainNoInput").value;
+      const trainNo = document.getElementById("trainNoInput").value.trim();
+      const dojInput = document.getElementById("dojInput").value;
       const statusMsg = document.getElementById("status-message");
+      const trainInfo = document.getElementById("train-info");
       const container = document.getElementById("stations-list");
-      if (!trainNo) return alert("Please enter a train number");
+
+      if (!trainNo || !dojInput) {
+        alert("Please enter both train number and date of journey.");
+        return;
+      }
+
+      const doj = dojInput.replace(/-/g, ""); // YYYYMMDD
 
       statusMsg.style.display = 'block';
       statusMsg.className = 'alert alert-info text-center';
-      statusMsg.innerHTML = 'Fetching live status...';
+      statusMsg.innerHTML = '⏳ Fetching live status...';
+      trainInfo.innerHTML = '';
       container.innerHTML = '';
 
       fetch('/live-status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ trainNo })
+        body: JSON.stringify({
+          train_number: trainNo,
+          departure_date: doj,
+          isH5: true,
+          client: "web"
+        })
       })
       .then(res => res.json())
       .then(data => {
-        if (!data || !data.body || !data.body.stations) {
+        if (!data || !data.body || !Array.isArray(data.body.stations)) {
           statusMsg.className = 'alert alert-danger text-center';
-          statusMsg.innerHTML = '❌ Invalid API structure';
+          statusMsg.innerHTML = '❌ Invalid API structure or missing data';
           return;
         }
 
         const { train_status_message, current_station, terminated, stations } = data.body;
+        const title = data?.title || 'Success';
 
         statusMsg.className = 'alert alert-success text-center';
-        statusMsg.innerHTML = `<strong>Status:</strong> ${train_status_message}`;
+        statusMsg.innerHTML = `✅ <strong>${title}:</strong> ${train_status_message}`;
+        trainInfo.innerHTML = `Showing live status for <strong>Train No: ${trainNo}</strong><br><span class="text-muted">Date of Journey: ${dojInput}</span>`;
 
         stations.forEach(station => {
           const div = document.createElement("div");
@@ -97,7 +130,7 @@
         });
       })
       .catch(err => {
-        console.error(err);
+        console.error('Fetch error:', err);
         statusMsg.className = 'alert alert-danger text-center';
         statusMsg.innerHTML = '❌ Error: Failed to fetch live status';
       });
