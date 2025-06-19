@@ -1,4 +1,23 @@
-@app.route('/live-status')
+from flask import Flask, request, jsonify
+import requests
+
+app = Flask(__name__)
+
+# 🔁 Replace with your actual RapidAPI credentials
+RAPIDAPI_KEY = "YOUR_RAPIDAPI_KEY"
+RAPIDAPI_HOST = "indian-railway-irctc.p.rapidapi.com"
+
+def make_rapidapi_post(endpoint, payload):
+    url = f"https://{RAPIDAPI_HOST}{endpoint}"
+    headers = {
+        "content-type": "application/json",
+        "X-RapidAPI-Key": RAPIDAPI_KEY,
+        "X-RapidAPI-Host": RAPIDAPI_HOST
+    }
+    response = requests.post(url, json=payload, headers=headers)
+    return response.json()
+
+@app.route("/live-status")
 def live_status():
     train_no = request.args.get("train_number")
     departure_date = request.args.get("departure_date")
@@ -8,37 +27,30 @@ def live_status():
     if not train_no or not departure_date:
         return jsonify({"error": "Train number and departure date are required"}), 400
 
-    payload = {
-        "trainNo": train_no,
-        "departure_date": departure_date,
-        "isH5": isH5,
-        "client": client
-    }
-
     try:
-        result = make_rapidapi_post("/trainLiveStatus", payload)
-        print("🔍 API raw response:", json.dumps(result, indent=2))
+        payload = {
+            "trainNo": train_no,
+            "departure_date": departure_date,
+            "isH5": isH5,
+            "client": client
+        }
 
-        body = result.get("data", {}).get("body")
-        if not body:
+        result = make_rapidapi_post("/trainLiveStatus", payload)
+
+        if result.get("status") != "success" or not result.get("body"):
             return jsonify({
-                "error": "Invalid API structure",
-                "note": "Missing 'body' in result",
-                "raw_response": result
+                "error": "Invalid API structure or missing data",
+                "raw": result
             }), 500
 
         return jsonify({
-            "train_status_message": body.get("train_status_message", "Not available"),
-            "current_station": body.get("current_station", "Unknown"),
-            "terminated": body.get("terminated", False),
-            "time_of_availability": body.get("time_of_availability", "Unknown"),
-            "stations": body.get("stations", []),
-            "title": result.get("data", {}).get("title", "Live Status"),
-            "body": body
+            "title": result.get("title", "Live Status"),
+            "message": result.get("message"),
+            "body": result["body"]
         })
 
     except Exception as e:
-        return jsonify({
-            "error": "Exception occurred while fetching status",
-            "details": str(e)
-        }), 500
+        return jsonify({"error": "Exception occurred", "details": str(e)}), 500
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
