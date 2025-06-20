@@ -32,8 +32,13 @@ def live_status():
 
     try:
         response = requests.get(url, headers=headers, params=params)
-        response.raise_for_status()  # raises HTTPError for 4xx/5xx
+        print("🚀 API Request Sent:", response.url)
+        print("📥 Status Code:", response.status_code)
+        print("📦 Response Text:", response.text)
+        response.raise_for_status()
         return jsonify(response.json())
-    except requests.exceptions.RequestException as e:
-        print("🔴 Request failed:", e)
-        return jsonify({'error': 'Failed to fetch live status', 'details': str(e)}), 500
+    except Exception as e:
+        return jsonify({
+            'error': 'Failed to fetch live status',
+            'details': str(e)
+        }), 500
