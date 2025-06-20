@@ -23,5 +23,9 @@ def live_status():
     except Exception as e:
         return jsonify({'error': 'Failed to fetch live status', 'details': str(e)}), 500
 
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    import os
+    port = int(os.environ.get("PORT", 5000))  # Use Render's assigned port
+    app.run(host="0.0.0.0", port=port)
+
