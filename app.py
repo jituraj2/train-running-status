@@ -6,6 +6,10 @@ app = Flask(__name__)
 
 API_KEY = os.getenv('RAIL_API_KEY')  # Set this in your Render environment
 
+@app.route('/')
+def home():
+    return render_template('index.html')
+
 @app.route('/live-status')
 def live_status():
     train_number = request.args.get('train_number')
