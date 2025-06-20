@@ -82,13 +82,16 @@
       })
       .then(data => {
         const body = data.body;
+        console.log('Live Status API Response:', data);
+
         const stations = body?.stations;
 
-        if (!stations || !Array.isArray(stations) || stations.length === 0) {
-          statusMsg.className = 'alert alert-danger text-center';
-          statusMsg.innerHTML = '❌ No stations found for this train/date.';
-          return;
-        }
+if (!stations || !Array.isArray(stations) || stations.length === 0) {
+  statusMsg.className = 'alert alert-danger text-center';
+  statusMsg.innerHTML = '❌ Invalid API response or no stations found.';
+  return;
+}
+
 
         statusMsg.className = 'alert alert-success text-center';
         statusMsg.innerHTML = `✅ ${body.train_status_message || 'Train status fetched successfully'}`;
