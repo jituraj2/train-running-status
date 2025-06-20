@@ -75,23 +75,17 @@
       trainInfo.innerHTML = '';
       container.innerHTML = '';
 
-      fetch(`/live-status?train_number=${trainNo}&departure_date=${doj}&isH5=true&client=web`)
-        .then(res => {
-          if (!res.ok) throw new Error('Network response was not ok');
-          return res.json();
-        })
+      fetch(`/live-status?train_number=${trainNo}&departure_date=${doj}`)
+        .then(res => res.json())
         .then(data => {
-          const body = data.body;
-          const stations = body?.stations || [];
+          const body = data?.body || {};
+          const stations = Array.isArray(body.stations) ? body.stations : [];
 
-          if (!Array.isArray(stations) || stations.length === 0) {
-            statusMsg.className = 'alert alert-warning text-center';
+          if (stations.length === 0) {
+            statusMsg.className = 'alert alert-danger text-center';
             statusMsg.innerHTML = '❌ No stations found for this train/date.';
             return;
           }
-
-          const currentStation = body.current_station;
-          const isTerminated = body.terminated;
 
           statusMsg.className = 'alert alert-success text-center';
           statusMsg.innerHTML = `✅ ${body.train_status_message || 'Train status fetched successfully'}`;
@@ -100,11 +94,11 @@
           stations.forEach(station => {
             const div = document.createElement("div");
             div.className = "col-lg-6 col-md-12";
-            const isCurrent = station.stationCode === currentStation;
-            const isEnd = isTerminated && isCurrent;
+            const isCurrent = station.stationCode === body.current_station;
+            const isTerminated = body.terminated && isCurrent;
 
             div.innerHTML = `
-              <div class="card ${isCurrent ? 'current' : ''} ${isEnd ? 'terminated' : ''}">
+              <div class="card ${isCurrent ? 'current' : ''} ${isTerminated ? 'terminated' : ''}">
                 <div class="card-body">
                   <h5 class="card-title station-header">${station.stationName} <span class="text-muted">(${station.stationCode})</span></h5>
                   <p class="card-text">
