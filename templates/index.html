@@ -60,7 +60,7 @@
       trainInfo.innerHTML = '';
       container.innerHTML = '';
 
-      fetch(`/live-status?train_number=${trainNo}&departure_date=${doj}`)
+      fetch(`/live-status?train_number=${trainNo}&departure_date=${doj}&isH5=true&client=web`)
         .then(res => res.json())
         .then(data => {
           const body = data.body;
