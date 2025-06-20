@@ -36,7 +36,7 @@
 
     <div class="mb-3 row justify-content-center">
       <div class="col-md-5">
-        <input type="text" id="trainNoInput" class="form-control" placeholder="Enter Train Number (e.g., 18030)" />
+        <input type="text" id="trainNoInput" class="form-control" placeholder="Enter Train Number (e.g., 12051)" />
       </div>
       <div class="col-md-3">
         <input type="text" id="dojInput" class="form-control" placeholder="Enter Date (YYYYMMDD)" />
@@ -56,78 +56,76 @@
     <small>© 2025 By AK IT Services</small>
   </footer>
 
-    <script>
-  function fetchStatus() {
-    const trainNo = document.getElementById("trainNoInput").value.trim();
-    const doj = document.getElementById("dojInput").value.trim();
-    const statusMsg = document.getElementById("status-message");
-    const trainInfo = document.getElementById("train-info");
-    const container = document.getElementById("stations-list");
+  <script>
+    function fetchStatus() {
+      const trainNo = document.getElementById("trainNoInput").value.trim();
+      const doj = document.getElementById("dojInput").value.trim();
+      const statusMsg = document.getElementById("status-message");
+      const trainInfo = document.getElementById("train-info");
+      const container = document.getElementById("stations-list");
 
-    if (!trainNo || !doj || doj.length !== 8 || isNaN(doj)) {
-      alert("Please enter a valid train number and date in YYYYMMDD format.");
-      return;
-    }
+      if (!trainNo || !doj || doj.length !== 8 || isNaN(doj)) {
+        alert("Please enter a valid train number and date in YYYYMMDD format.");
+        return;
+      }
 
-    statusMsg.style.display = 'block';
-    statusMsg.className = 'alert alert-info text-center';
-    statusMsg.innerHTML = '⏳ Fetching live status...';
-    trainInfo.innerHTML = '';
-    container.innerHTML = '';
+      statusMsg.style.display = 'block';
+      statusMsg.className = 'alert alert-info text-center';
+      statusMsg.innerHTML = '⏳ Fetching live status...';
+      trainInfo.innerHTML = '';
+      container.innerHTML = '';
 
-    fetch(`/live-status?train_number=${trainNo}&departure_date=${doj}`)
-      .then(res => {
-        if (!res.ok) throw new Error('Network response was not ok');
-        return res.json();
-      })
-      .then(data => {
-        const body = data.body;
-        console.log('Live Status API Response:', data);
+      fetch(`/live-status?train_number=${trainNo}&departure_date=${doj}`)
+        .then(res => {
+          if (!res.ok) throw new Error('Network response was not ok');
+          return res.json();
+        })
+        .then(data => {
+          console.log('Live Status API Response:', data); // Debug log
 
-        const stations = body?.stations;
+          const body = data.body;
+          const stations = body?.stations;
 
-if (!stations || !Array.isArray(stations) || stations.length === 0) {
-  statusMsg.className = 'alert alert-danger text-center';
-  statusMsg.innerHTML = '❌ Invalid API response or no stations found.';
-  return;
-}
+          if (!stations || !Array.isArray(stations) || stations.length === 0) {
+            statusMsg.className = 'alert alert-danger text-center';
+            statusMsg.innerHTML = '❌ Invalid API response or no stations found.';
+            return;
+          }
 
+          statusMsg.className = 'alert alert-success text-center';
+          statusMsg.innerHTML = `✅ ${body.train_status_message || 'Train status fetched successfully'}`;
+          trainInfo.innerHTML = `Showing live status for <strong>Train No: ${trainNo}</strong><br><span class="text-muted">Date of Journey: ${doj}</span>`;
 
-        statusMsg.className = 'alert alert-success text-center';
-        statusMsg.innerHTML = `✅ ${body.train_status_message || 'Train status fetched successfully'}`;
-        trainInfo.innerHTML = `Showing live status for <strong>Train No: ${trainNo}</strong><br><span class="text-muted">Date of Journey: ${doj}</span>`;
+          stations.forEach(station => {
+            const div = document.createElement("div");
+            div.className = "col-lg-6 col-md-12";
+            const isCurrent = station.stationCode === body.current_station;
+            const isTerminated = body.terminated && isCurrent;
 
-        stations.forEach(station => {
-          const div = document.createElement("div");
-          div.className = "col-lg-6 col-md-12";
-          const isCurrent = station.stationCode === body.current_station;
-          const isTerminated = body.terminated && isCurrent;
-
-          div.innerHTML = `
-            <div class="card ${isCurrent ? 'current' : ''} ${isTerminated ? 'terminated' : ''}">
-              <div class="card-body">
-                <h5 class="card-title station-header">${station.stationName} <span class="text-muted">(${station.stationCode})</span></h5>
-                <p class="card-text">
-                  🕑 <strong>Scheduled Arrival:</strong> ${station.arrivalTime || '--'}<br>
-                  ✅ <strong>Actual Arrival:</strong> ${station.actual_arrival_time || '--'}<br>
-                  🕓 <strong>Scheduled Departure:</strong> ${station.departureTime || '--'}<br>
-                  ✅ <strong>Actual Departure:</strong> ${station.actual_departure_time || '--'}<br>
-                  📏 <strong>Distance:</strong> ${station.distance} km<br>
-                  📅 <strong>Day:</strong> ${station.dayCount}
-                </p>
+            div.innerHTML = `
+              <div class="card ${isCurrent ? 'current' : ''} ${isTerminated ? 'terminated' : ''}">
+                <div class="card-body">
+                  <h5 class="card-title station-header">${station.stationName} <span class="text-muted">(${station.stationCode})</span></h5>
+                  <p class="card-text">
+                    🕑 <strong>Scheduled Arrival:</strong> ${station.arrivalTime || '--'}<br>
+                    ✅ <strong>Actual Arrival:</strong> ${station.actual_arrival_time || '--'}<br>
+                    🕓 <strong>Scheduled Departure:</strong> ${station.departureTime || '--'}<br>
+                    ✅ <strong>Actual Departure:</strong> ${station.actual_departure_time || '--'}<br>
+                    📏 <strong>Distance:</strong> ${station.distance} km<br>
+                    📅 <strong>Day:</strong> ${station.dayCount}
+                  </p>
+                </div>
               </div>
-            </div>
-          `;
-          container.appendChild(div);
+            `;
+            container.appendChild(div);
+          });
+        })
+        .catch(err => {
+          console.error('Fetch error:', err);
+          statusMsg.className = 'alert alert-danger text-center';
+          statusMsg.innerHTML = '❌ Error: Failed to fetch live status';
         });
-      })
-      .catch(err => {
-        console.error('Fetch error:', err);
-        statusMsg.className = 'alert alert-danger text-center';
-        statusMsg.innerHTML = '❌ Error: Failed to fetch live status';
-      });
-  }
-</script>
-
+    }
+  </script>
 </body>
 </html>
