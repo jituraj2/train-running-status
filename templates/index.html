@@ -14,18 +14,29 @@
       transition: transform 0.3s;
     }
     .card:hover { transform: scale(1.01); }
-    .current { background-color: #e7f5ff !important; border-left-color: #0dcaf0 !important; }
-    .terminated { background-color: #ffe3e3 !important; border-left-color: #dc3545 !important; }
+    .current {
+      background-color: #e7f5ff !important;
+      border-left-color: #0dcaf0 !important;
+    }
+    .terminated {
+      background-color: #ffe3e3 !important;
+      border-left-color: #dc3545 !important;
+    }
     .station-header { font-weight: 600; color: #0d6efd; }
-    footer { margin-top: 2rem; text-align: center; color: #6c757d; }
+    footer {
+      margin-top: 2rem;
+      text-align: center;
+      color: #6c757d;
+    }
   </style>
 </head>
 <body>
   <div class="container py-4">
     <h2 class="mb-4 text-center">Live Train Status</h2>
+
     <div class="mb-3 row justify-content-center">
       <div class="col-md-5">
-        <input type="text" id="trainNoInput" class="form-control" placeholder="Enter Train Number (e.g., 12051)" />
+        <input type="text" id="trainNoInput" class="form-control" placeholder="Enter Train Number (e.g., 18030)" />
       </div>
       <div class="col-md-3">
         <input type="text" id="dojInput" class="form-control" placeholder="Enter Date (YYYYMMDD)" />
@@ -34,12 +45,16 @@
         <button class="btn btn-primary w-100" onclick="fetchStatus()">Search</button>
       </div>
     </div>
+
     <div id="status-message" class="alert text-center" style="display:none;"></div>
     <h5 id="train-info" class="text-center text-muted mb-3"></h5>
+
     <div class="row" id="stations-list"></div>
   </div>
 
-  <footer><small>© 2025 By AK IT Services</small></footer>
+  <footer>
+    <small>© 2025 By AK IT Services</small>
+  </footer>
 
   <script>
     function fetchStatus() {
@@ -61,12 +76,15 @@
       container.innerHTML = '';
 
       fetch(`/live-status?train_number=${trainNo}&departure_date=${doj}`)
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) throw new Error('Network response was not ok');
+          return res.json();
+        })
         .then(data => {
-          const body = data?.body;
-          const stations = body?.stations || [];
+          const body = data.body;
+          const stations = body?.stations;
 
-          if (!stations.length) {
+          if (!stations || !Array.isArray(stations) || stations.length === 0) {
             statusMsg.className = 'alert alert-danger text-center';
             statusMsg.innerHTML = '❌ No stations found for this train/date.';
             return;
@@ -103,7 +121,7 @@
         .catch(err => {
           console.error('Fetch error:', err);
           statusMsg.className = 'alert alert-danger text-center';
-          statusMsg.innerHTML = '❌ Error: Invalid API response or missing data.';
+          statusMsg.innerHTML = '❌ Error: Failed to fetch live status';
         });
     }
   </script>
