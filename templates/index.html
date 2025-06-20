@@ -78,7 +78,7 @@
   fetch(`/live-status?train_number=${trainNo}&departure_date=${doj}`)
     .then(res => res.json())
     .then(data => {
-      console.log("API Response:", data);
+      document.body.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
 
       // ✅ Updated condition with logging
       const body = data?.body;
