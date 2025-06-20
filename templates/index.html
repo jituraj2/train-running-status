@@ -6,40 +6,25 @@
   <title>Live Train Status</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <style>
-    body { background-color: #f4f7fa; }
-    .card {
-      box-shadow: 0 0 12px rgba(0,0,0,0.1); 
-      margin-bottom: 1rem; 
-      border-left: 5px solid #0d6efd;
-      transition: transform 0.3s;
-    }
-    .card:hover { transform: scale(1.01); }
-    .current {
-      background-color: #e7f5ff !important;
-      border-left-color: #0dcaf0 !important;
-    }
-    .terminated {
-      background-color: #ffe3e3 !important;
-      border-left-color: #dc3545 !important;
-    }
-    .station-header { font-weight: 600; color: #0d6efd; }
-    footer {
-      margin-top: 2rem;
-      text-align: center;
-      color: #6c757d;
-    }
+    body { background: #f4f7fa; }
+    .card { box-shadow: 0 0 12px rgba(0,0,0,0.1); margin-bottom:1rem; border-left:5px solid #0d6efd; transition:0.3s;}
+    .card:hover { transform:scale(1.01);}
+    .current {background:#e7f5ff!important; border-left-color:#0dcaf0!important;}
+    .terminated {background:#ffe3e3!important; border-left-color:#dc3545!important;}
+    .station-header { font-weight:600; color:#0d6efd; }
+    footer { margin-top:2rem; text-align:center; color:#6c757d; }
   </style>
 </head>
 <body>
   <div class="container py-4">
     <h2 class="mb-4 text-center">Live Train Status</h2>
 
-    <div class="mb-3 row justify-content-center">
+    <div class="row justify-content-center mb-3">
       <div class="col-md-5">
-        <input type="text" id="trainNoInput" class="form-control" placeholder="Enter Train Number (e.g., 12051)" />
+        <input id="trainNoInput" class="form-control" placeholder="Train Number (e.g., 12051)">
       </div>
       <div class="col-md-3">
-        <input type="text" id="dojInput" class="form-control" placeholder="Enter Date (YYYYMMDD)" />
+        <input id="dojInput" class="form-control" placeholder="Date (YYYYMMDD)">
       </div>
       <div class="col-md-2">
         <button class="btn btn-primary w-100" onclick="fetchStatus()">Search</button>
@@ -48,82 +33,75 @@
 
     <div id="status-message" class="alert text-center" style="display:none;"></div>
     <h5 id="train-info" class="text-center text-muted mb-3"></h5>
-
-    <div class="row" id="stations-list"></div>
+    <div id="stations-list" class="row"></div>
   </div>
 
-  <footer>
-    <small>© 2025 By AK IT Services</small>
-  </footer>
+  <footer>© 2025 By AK IT Services</footer>
 
   <script>
     function fetchStatus() {
       const trainNo = document.getElementById("trainNoInput").value.trim();
       const doj = document.getElementById("dojInput").value.trim();
-      const statusMsg = document.getElementById("status-message");
-      const trainInfo = document.getElementById("train-info");
-      const container = document.getElementById("stations-list");
+      const msg = document.getElementById("status-message");
+      const info = document.getElementById("train-info");
+      const list = document.getElementById("stations-list");
 
       if (!trainNo || !doj || doj.length !== 8 || isNaN(doj)) {
-        alert("Please enter a valid train number and date in YYYYMMDD format.");
+        alert("Enter valid Train Number and Date (YYYYMMDD).");
         return;
       }
 
-      statusMsg.style.display = 'block';
-      statusMsg.className = 'alert alert-info text-center';
-      statusMsg.innerHTML = '⏳ Fetching live status...';
-      trainInfo.innerHTML = '';
-      container.innerHTML = '';
+      msg.style.display = 'block';
+      msg.className = 'alert alert-info';
+      msg.innerHTML = '⏳ Fetching live status...';
+      info.innerHTML = '';
+      list.innerHTML = '';
 
       fetch(`/live-status?train_number=${trainNo}&departure_date=${doj}`)
         .then(res => {
-          if (!res.ok) throw new Error('Network response was not ok');
+          if (!res.ok) throw new Error(res.statusText);
           return res.json();
         })
         .then(data => {
-          console.log('Live Status API Response:', data); // Debug log
-
+          console.log(data);
           const body = data.body;
-          const stations = body?.stations;
+          const stations = Array.isArray(body?.stations) ? body.stations : [];
 
-          if (!stations || !Array.isArray(stations) || stations.length === 0) {
-            statusMsg.className = 'alert alert-danger text-center';
-            statusMsg.innerHTML = '❌ Invalid API response or no stations found.';
+          if (!stations.length) {
+            msg.className = 'alert alert-danger';
+            msg.innerHTML = '❌ No station data found.';
             return;
           }
 
-          statusMsg.className = 'alert alert-success text-center';
-          statusMsg.innerHTML = `✅ ${body.train_status_message || 'Train status fetched successfully'}`;
-          trainInfo.innerHTML = `Showing live status for <strong>Train No: ${trainNo}</strong><br><span class="text-muted">Date of Journey: ${doj}</span>`;
+          msg.className = 'alert alert-success';
+          msg.innerHTML = `✅ ${body.train_status_message || 'Status fetched'}`;
+          info.innerHTML = `Train No: <strong>${trainNo}</strong> | Date: <strong>${doj}</strong>`;
 
-          stations.forEach(station => {
-            const div = document.createElement("div");
-            div.className = "col-lg-6 col-md-12";
-            const isCurrent = station.stationCode === body.current_station;
-            const isTerminated = body.terminated && isCurrent;
-
-            div.innerHTML = `
-              <div class="card ${isCurrent ? 'current' : ''} ${isTerminated ? 'terminated' : ''}">
+          stations.forEach(stn => {
+            const card = document.createElement('div');
+            card.className = 'col-lg-6 col-md-12';
+            const isCurrent = stn.stationCode === body.current_station;
+            card.innerHTML = `
+              <div class="card ${isCurrent ? 'current' : ''} ${body.terminated && isCurrent ? 'terminated' : ''}">
                 <div class="card-body">
-                  <h5 class="card-title station-header">${station.stationName} <span class="text-muted">(${station.stationCode})</span></h5>
-                  <p class="card-text">
-                    🕑 <strong>Scheduled Arrival:</strong> ${station.arrivalTime || '--'}<br>
-                    ✅ <strong>Actual Arrival:</strong> ${station.actual_arrival_time || '--'}<br>
-                    🕓 <strong>Scheduled Departure:</strong> ${station.departureTime || '--'}<br>
-                    ✅ <strong>Actual Departure:</strong> ${station.actual_departure_time || '--'}<br>
-                    📏 <strong>Distance:</strong> ${station.distance} km<br>
-                    📅 <strong>Day:</strong> ${station.dayCount}
+                  <h5 class="station-header">${stn.stationName} (${stn.stationCode})</h5>
+                  <p>
+                    🕑 Scheduled Arrival: ${stn.arrivalTime || '--'}<br>
+                    ✅ Actual Arrival: ${stn.actual_arrival_time || '--'}<br>
+                    🕓 Scheduled Dept: ${stn.departureTime || '--'}<br>
+                    ✅ Actual Dept: ${stn.actual_departure_time || '--'}<br>
+                    📏 Distance: ${stn.distance} km<br>
+                    📅 Day: ${stn.dayCount}
                   </p>
                 </div>
-              </div>
-            `;
-            container.appendChild(div);
+              </div>`;
+            list.appendChild(card);
           });
         })
         .catch(err => {
-          console.error('Fetch error:', err);
-          statusMsg.className = 'alert alert-danger text-center';
-          statusMsg.innerHTML = '❌ Error: Failed to fetch live status';
+          console.error(err);
+          msg.className = 'alert alert-danger';
+          msg.innerHTML = '❌ Error fetching live status.';
         });
     }
   </script>
