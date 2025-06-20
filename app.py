@@ -4,24 +4,25 @@ import os
 
 app = Flask(__name__)
 
+# Load your RapidAPI key from environment variable
 RAPIDAPI_KEY = os.getenv("RAPIDAPI_KEY")
 
-@app.route('/')
-def home():
-    return render_template('index.html')
+@app.route("/")
+def index():
+    return render_template("index.html")
 
-@app.route('/live-status')
+@app.route("/live-status")
 def live_status():
-    train_number = request.args.get('train_number')
-    departure_date = request.args.get('departure_date')
+    train_number = request.args.get("train_number")
+    departure_date = request.args.get("departure_date")
 
     if not train_number or not departure_date:
-        return jsonify({'error': 'Missing train_number or departure_date'}), 400
+        return jsonify({"error": "Missing train_number or departure_date"}), 400
 
     url = "https://indian-railway-irctc.p.rapidapi.com/api/trains/v1/train/status"
     headers = {
-        "x-rapidapi-host": "indian-railway-irctc.p.rapidapi.com",
-        "x-rapidapi-key": RAPIDAPI_KEY
+        "X-RapidAPI-Key": RAPIDAPI_KEY,
+        "X-RapidAPI-Host": "indian-railway-irctc.p.rapidapi.com"
     }
     params = {
         "train_number": train_number,
@@ -32,16 +33,11 @@ def live_status():
 
     try:
         response = requests.get(url, headers=headers, params=params)
-        print("🚀 API Request Sent:", response.url)
-        print("📥 Status Code:", response.status_code)
-        print("📦 Response Text:", response.text)
         response.raise_for_status()
         return jsonify(response.json())
-    except Exception as e:
-        return jsonify({
-            'error': 'Failed to fetch live status',
-            'details': str(e)
-        }), 500
+    except requests.RequestException as e:
+        return jsonify({"error": "Failed to fetch live status", "details": str(e)}), 500
+
        
     if __name__ == '__main__':
     import os
