@@ -1,14 +1,11 @@
-from flask import Flask, request, jsonify, render_template
-import requests
 import os
+import requests
+from flask import Flask, request, jsonify, render_template
 
-app = Flask(__name__, template_folder='templates')
-
-# Ensure your RapidAPI key is set as an environment variable
-RAPIDAPI_KEY = os.getenv('RAPIDAPI_KEY')  # Paste key for local testing if needed
+app = Flask(__name__)
 
 @app.route('/')
-def home():
+def index():
     return render_template('index.html')
 
 @app.route('/live-status')
@@ -17,28 +14,28 @@ def live_status():
     departure_date = request.args.get('departure_date')
 
     if not train_number or not departure_date:
-        return jsonify({'error': 'Missing train_number or departure_date'}), 400
+        return jsonify({"error": "Missing train_number or departure_date"}), 400
 
     url = "https://indian-railway-irctc.p.rapidapi.com/api/trains/v1/train/status"
-    headers = {
-        "X-RapidAPI-Key": RAPIDAPI_KEY or "PASTE_YOUR_KEY_HERE",
-        "X-RapidAPI-Host": "indian-railway-irctc.p.rapidapi.com"
-    }
-    params = {
-        "train_number": train_number,
+    querystring = {
         "departure_date": departure_date,
         "isH5": "true",
-        "client": "web"
+        "client": "web",
+        "train_number": train_number
+    }
+    headers = {
+        "x-rapidapi-key": os.getenv("RAPIDAPI_KEY"),
+        "x-rapidapi-host": os.getenv("RAPIDAPI_HOST"),
+        "x-rapid-api": "rapid-api-database"
     }
 
     try:
-        response = requests.get(url, headers=headers, params=params, timeout=10)
+        response = requests.get(url, headers=headers, params=querystring)
         response.raise_for_status()
         return jsonify(response.json())
-    except requests.exceptions.HTTPError as errh:
-        return jsonify({'error': 'HTTP error', 'details': str(errh)}), 502
     except Exception as e:
-        return jsonify({'error': 'Failed to fetch train status', 'details': str(e)}), 500
+        return jsonify({"error": "Failed to fetch train status", "details": str(e)}), 500
+
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
